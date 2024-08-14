@@ -1,0 +1,86 @@
+# Holiday API Flask Application
+
+## Overview
+
+This project is a Flask-based API that interacts with a PostgreSQL database and an external Holiday API to manage and retrieve holiday data. The application includes endpoints for refreshing location data, refreshing holiday data, and finding holidays based on location and date range.
+
+## Prerequisites
+
+Before you start, ensure you have the following installed:
+
+- Python 3.x
+- PostgreSQL
+- pip (Python package installer)
+- Virtualenv (optional but recommended)
+
+
+## Setup Instructions
+
+1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/holiday-api-flask-app.git
+    cd holiday-api-flask-app
+    ```
+
+2. **Create a virtual environment:**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate   # On Windows: venv\Scripts\activate
+    ```
+
+3. **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Create a `.env` file:**
+    ```env
+    API_KEY=your_holiday_api_key
+    DB_NAME=your_database_name
+    DB_USERNAME=your_database_username
+    DB_PASSWORD=your_database_password
+    ```
+
+5. **Set up the PostgreSQL database:**
+   - Create a PostgreSQL database and ensure the credentials match those in the `.env` file.
+
+6. **Run the Flask application:**
+    ```bash
+    python app.py
+    ```
+
+## API Endpoints
+
+### 1. Refresh Locations from SQL
+   - **URL:** `/refresh_locations_from_sql`
+   - **Method:** `POST`
+   - **Description:** Updates the locations table from the SQL file.
+   - **Response:** JSON with a success or error message.
+
+### 2. Refresh Holidays Data
+   - **URL:** `/refresh_holidays_data`
+   - **Method:** `POST`
+   - **Description:** Refreshes holiday data by fetching it from the Holiday API.
+   - **Response:** JSON with a success or error message.
+
+### 3. Find Holidays by Location and Date Range
+   - **URL:** `/find_holidays/<location_id>`
+   - **Method:** `GET`
+   - **Description:** Retrieves holidays for a given location within a specified date range.
+   - **Parameters:**
+     - `start_date` (query parameter, required): The start date for the range.
+     - `end_date` (query parameter, required): The end date for the range.
+   - **Response:** JSON with a list of holidays or an error message.
+
+## Error Handling
+
+The application includes global error handling using Flask's `@app.errorhandler` decorators. Common errors like `404 Not Found` and `500 Internal Server Error` are handled and return appropriate JSON responses.
+
+## Closing the Database Connection
+
+The database connection is automatically closed when the application context is torn down using the `@app.teardown_appcontext` decorator.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
