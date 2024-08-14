@@ -21,3 +21,20 @@ class HolidayAPIClient:
                 data['error'] = 'Unknown error.'
 
         return data
+
+    def get_countries(self, parameters):
+        url = 'https://holidayapi.com/v1/countries?'
+
+        if not parameters.get('key'):
+            parameters['key'] = self.key
+        else:
+            assert self.key == parameters['key'], 'Keys supplied as an argument & in `parameters` differ. \n Provide at only one place'
+
+        response = requests.get(url, params=parameters)
+        data = response.json()
+
+        if not response.ok:
+            if not data.get('error'):
+                data['error'] = 'Unknown error.'
+
+        return data

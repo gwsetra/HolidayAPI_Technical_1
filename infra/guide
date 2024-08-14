@@ -1,0 +1,16 @@
+To initialise Database using Dockerfile:
+Option 1:
+    1. Easier to use Pycharm, Right click Dockerfile > Modify Run Configuration
+    2. Under run section, click modify, add container name, bind ports and environment variables
+    3. Change container name as you see proper
+    4. For bind ports, {local_port}:5432
+    5. For Environment Variable, input value for POSTGRES_DB, POSTGRES_USER and POSTGRES_PASSWORD
+
+Option 2:
+    1. docker build -t local_postgres_image -f infra/Dockerfile .
+    2. docker run --name local_postgres_convious \
+          -p 5432:5432 \
+          -e POSTGRES_DB=docker_db_name \
+          -e POSTGRES_PASSWORD=your_password \
+          -e POSTGRES_USER=your_username \
+          local_postgres_image
