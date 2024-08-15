@@ -54,23 +54,26 @@ Before you start, ensure you have the following installed:
 ### 1. Refresh Locations from SQL
    - **URL:** `/refresh_locations_from_sql`
    - **Method:** `POST`
-   - **Description:** Updates the locations table from the SQL file.
+   - **Description:** Updates the locations table from the `locations_data.sql` file. All existing data in the table will be overwritten.
    - **Response:** JSON with a success or error message.
+   - **Example:** `curl "localhost:5000/refresh_locations_from_sql"`
 
 ### 2. Refresh Holidays Data
    - **URL:** `/refresh_holidays_data`
    - **Method:** `POST`
-   - **Description:** Refreshes holiday data by fetching it from the Holiday API.
+   - **Description:** Refreshes holiday data by fetching it from the Holiday API. All existing data in the table will be overwritten.
    - **Response:** JSON with a success or error message.
+   - **Example:** `curl "localhost:5000/refresh_holidays_data"`
 
 ### 3. Find Holidays by Location and Date Range
    - **URL:** `/find_holidays/<location_id>`
    - **Method:** `GET`
-   - **Description:** Retrieves holidays for a given location within a specified date range.
+   - **Description:** Retrieves holidays for a given location within a specified date range from database.
    - **Parameters:**
      - `start_date` (query parameter, required): The start date for the range.
      - `end_date` (query parameter, required): The end date for the range.
    - **Response:** JSON with a list of holidays or an error message.
+   - **Example:** `curl "localhost:5000/find_holidays/fdbf55b4-1b97-43a8-a096-a71d0b9d6940?start_date=2024-01-01&end_date=2024-12-31"`
 
 ## Error Handling
 
