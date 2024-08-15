@@ -4,7 +4,7 @@
 
 This project is a Flask-based API that interacts with a PostgreSQL database and an external Holiday API to manage and retrieve holiday data. The application includes endpoints for refreshing location data, refreshing holiday data, and finding holidays based on location and date range. 
 
-Daily 00.01 CRON job will fetch latest holidays data from Holidays API. This service provides capabilities for user to fetch latest holidays data or refresh locations data on demand.
+Daily 00.01 CRON Airflow job will fetch latest holidays data from Holidays API. This service provides capabilities for user to fetch latest holidays data or refresh locations data on demand.
 
 ## Prerequisites
 
@@ -88,4 +88,7 @@ The database connection is automatically closed when the application context is 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Note:
+For this task context, Airflow job mentioned in overview is not included in this repository. This documentation structured as it will be used in real-life scenario
 
