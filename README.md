@@ -90,5 +90,5 @@ The database connection is automatically closed when the application context is 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Note:
-For this task context, Airflow job mentioned in overview is not included in this repository. This documentation structured as it will be used in real-life scenario
+For this task context, Airflow job mentioned in overview is not included in this repository. This documentation is structured as if it will be used in a real-world scenario.
 
