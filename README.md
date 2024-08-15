@@ -9,7 +9,7 @@ This project is a Flask-based API that interacts with a PostgreSQL database and 
 Before you start, ensure you have the following installed:
 
 - Python 3.x
-- PostgreSQL
+- Docker Desktop or Docker Engine
 - pip (Python package installer)
 - Virtualenv (optional but recommended)
 
@@ -41,12 +41,12 @@ Before you start, ensure you have the following installed:
     DB_PASSWORD=your_database_password
     ```
 
-5. **Set up the PostgreSQL database:**
-   - Create a PostgreSQL database and ensure the credentials match those in the `.env` file.
+5. **Init the PostgreSQL database using Dockerfile:**
+   - Create a PostgreSQL database using dockerfile and ensure the credentials match those in the `.env` file.
 
 6. **Run the Flask application:**
     ```bash
-    python app.py
+    python main.py
     ```
 
 ## API Endpoints
