@@ -4,7 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
-from services.helper import get_holidays_from_api, update_locations_table, format_date
+from services.helper import update_holidays_from_api, update_locations_table, format_date
 from services.postgres_connection import PostgresConnection
 from services.holiday_api_client import HolidayAPIClient
 
@@ -15,33 +15,38 @@ app = Flask(__name__)
 
 @app.route('/refresh_locations_from_sql', methods=['POST'])
 def refresh_locations_from_sql():
+    """Refresh locations data by reading data from local SQL file, update locations table and return a success message."""
     try:
-        update_locations_table(db_conn)
+        response = update_locations_table(db_conn)
 
-        return jsonify({"message": "refresh_locations_from_sql run successfully"})
+        return jsonify({"message": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/refresh_holidays_data', methods=['POST'])
 def refresh_holidays_data():
+    """Refresh holiday data by getting data from the API, update holidays and holidays_subdivisions table and return a success message."""
     try:
-        get_holidays_from_api(db_conn, holiday_client)
+        response = update_holidays_from_api(db_conn, holiday_client)
 
-        return jsonify({"message": "refresh_holidays_data run successfully"})
+        return jsonify({"message": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/find_holidays/<location_id>', methods=['GET'])
 def find_holidays(location_id):
+    """Retrieve and return holiday data for a specified location and date range."""
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
 
+    # read url input parameters
     if not start_date:
         return jsonify({"error": "Missing required parameter: 'start_date'"}), 400
     if not end_date:
         return jsonify({"error": "Missing or invalid required parameter: 'end_date'"}), 400
 
     try:
+        # read template SQL to get holidays by locationid and date range and replace with input parameter values, store to variable
         insert_query = open("find_holidays_by_locationid_and_date_range.sql", 'r').read()
         insert_query = (insert_query.replace('{location_id_params}', location_id)
                         .replace('{date_range_start}', start_date)
@@ -52,6 +57,7 @@ def find_holidays(location_id):
         # Transform the data
         formatted_data = []
 
+        # format the output
         for row in holiday_data:
             formatted_row = {
                 "uuid": row[0],
@@ -97,17 +103,23 @@ def teardown(exception):
     if db_conn is not None:
         db_conn.close()
 
-# Example usage:
 if __name__ == "__main__":
+    # Load environment variable
     load_dotenv()
 
+    # Initiate database connection
     db_conn = PostgresConnection(
         dbname=os.getenv("DB_NAME"),
         user=os.getenv("DB_USERNAME"),
         password=os.getenv("DB_PASSWORD")
     )
+
+    # Initiate HolidayAPI client
     holiday_client = HolidayAPIClient(os.getenv("API_KEY"))
 
+    # Open database connection
     db_conn.connect()
-    get_holidays_from_api(db_conn, holiday_client)
+
+    # Refresh holidays data on first initialisation of service
+    update_holidays_from_api(db_conn, holiday_client)
     app.run(debug=True)
