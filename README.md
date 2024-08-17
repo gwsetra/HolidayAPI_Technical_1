@@ -45,6 +45,7 @@ Before you start, ensure you have the following installed:
 
 5. **Init the PostgreSQL database using Dockerfile:**
    - Create a PostgreSQL database using dockerfile and ensure the credentials match those in the `.env` file.
+   - Follow file named guide in infra folder to help about installation 
 
 6. **Run the Flask application:**
     ```bash
