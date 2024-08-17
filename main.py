@@ -82,28 +82,18 @@ def find_holidays(location_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# General Exception Handler
-@app.errorhandler(Exception)
-def handle_exception(e):
-    # Handle generic exceptions
-    response = {
-        "error": str(e)
-    }
-    # If the exception is an HTTPException, use its status code
-    if hasattr(e, 'code'):
-        return jsonify(response), e.code
-    # For other exceptions, use a 500 Internal Server Error
-    return jsonify(response), 500
+def init_db_connection(db_conn):
+    # Open database connection
+    try:
+        db_conn.connect()
+    except Exception as error:
+        error_message = str(error.args[0])
 
-# 500 Internal Server Error Handler
-@app.errorhandler(500)
-def internal_error(error):
-    return jsonify({"error": "Internal Server Error"}), 500
+        if 'connect' in error_message:
+            abort(401, description="Issue connecting with Database. Please validate credentials or availability of your database")
+        else:
+            abort(500, description="Unknown Internal Server Error" + error_message)
 
-# 404 Not Found Handler
-@app.errorhandler(404)
-def not_found_error(error):
-    return jsonify({"error": "Not Found"}), 404
 
 if __name__ == "__main__":
     with app.app_context():
@@ -120,16 +110,7 @@ if __name__ == "__main__":
         # Initiate HolidayAPI client
         holiday_client = HolidayAPIClient(os.getenv("API_KEY"))
 
-        # Open database connection
-        try:
-            db_conn.connect()
-        except Exception as error:
-            error_message = str(error.args[0])
-
-            if 'connect' in error_message:
-                abort(401, description="Issue connecting with Database. Please validate credentials or availability of your database")
-            else:
-                abort(500, description="Unknown Internal Server Error" + error_message)
+        init_db_connection(db_conn)
 
         # Refresh holidays and locations data on first initialisation of service
         refresh_locations_from_sql()
