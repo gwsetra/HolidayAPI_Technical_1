@@ -26,6 +26,9 @@ class HolidayAPIClient:
         response = requests.get(url, params=parameters)
         data = response.json()
 
+        if data['status'] == 401:
+            raise Exception('Invalid Holiday API Key')
+
         if not response.ok:
             if not data.get('error'):
                 data['error'] = 'Unknown error.'

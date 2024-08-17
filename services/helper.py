@@ -8,11 +8,14 @@ def format_date(date_input):
 
 def update_locations_table(db_conn):
     """Overwrite locations table with data executed from locations_data.sql file"""
-    truncate_query = "TRUNCATE TABLE locations;"
-    db_conn.execute_query(truncate_query)
+    try:
+        truncate_query = "TRUNCATE TABLE locations;"
+        db_conn.execute_query(truncate_query)
 
-    insert_query = open("locations_data.sql", 'r').read()
-    db_conn.execute_query(insert_query)
+        insert_query = open("locations_data.sql", 'r').read()
+        db_conn.execute_query(insert_query)
+    except Exception as error:
+        raise Exception('Issue connecting with Database')
 
     return 'locations table updated successfully'
 
@@ -35,8 +38,11 @@ def update_holidays_from_api(db_conn, holiday_client):
         String: Confirmation of process state
     """
     # Get country codes from the database
-    country_codes_tuple = get_country_codes_from_db(db_conn)
-    country_codes_params = ','.join(tup[0] for tup in country_codes_tuple)
+    try:
+        country_codes_tuple = get_country_codes_from_db(db_conn)
+        country_codes_params = ','.join(tup[0] for tup in country_codes_tuple)
+    except Exception as error:
+        raise Exception('Issue connecting with Database')
 
     # Define API parameters
     parameters = {
@@ -47,32 +53,36 @@ def update_holidays_from_api(db_conn, holiday_client):
     }
 
     # Fetch and create holiday dataframe
+
     holidays = holiday_client.get_holidays(parameters)
     df = pd.DataFrame(holidays['holidays'])
 
-    holidays_table = df.drop(columns=['subdivisions'])
-    holidays_table['weekday_date_name'] = pd.json_normalize(holidays_table['weekday'])['date.name']
-    holidays_table['weekday_date_numeric'] = pd.json_normalize(holidays_table['weekday'])['date.numeric']
-    holidays_table['weekday_observed_name'] = pd.json_normalize(holidays_table['weekday'])['observed.name']
-    holidays_table['weekday_observed_numeric'] = pd.json_normalize(holidays_table['weekday'])['observed.numeric']
+    try:
+        holidays_table = df.drop(columns=['subdivisions'])
+        holidays_table['weekday_date_name'] = pd.json_normalize(holidays_table['weekday'])['date.name']
+        holidays_table['weekday_date_numeric'] = pd.json_normalize(holidays_table['weekday'])['date.numeric']
+        holidays_table['weekday_observed_name'] = pd.json_normalize(holidays_table['weekday'])['observed.name']
+        holidays_table['weekday_observed_numeric'] = pd.json_normalize(holidays_table['weekday'])['observed.numeric']
 
-    del holidays_table['weekday']
+        del holidays_table['weekday']
 
-    # Update holidays table in the database
-    truncate_query = "TRUNCATE TABLE holidays;"
-    db_conn.execute_query(truncate_query)
+        # Update holidays table in the database
+        truncate_query = "TRUNCATE TABLE holidays;"
+        db_conn.execute_query(truncate_query)
 
-    # insert holidays information to holidays table
-    db_conn.insert_dataframe(holidays_table, 'holidays')
+        # insert holidays information to holidays table
+        db_conn.insert_dataframe(holidays_table, 'holidays')
 
-    # create holiday_subdivisions dataframe
-    holidays_subdivisions = df[['uuid', 'subdivisions']].explode('subdivisions')
-    holidays_subdivisions['subdivisions'] = holidays_subdivisions['subdivisions'].replace({np.nan: None})
+        # create holiday_subdivisions dataframe
+        holidays_subdivisions = df[['uuid', 'subdivisions']].explode('subdivisions')
+        holidays_subdivisions['subdivisions'] = holidays_subdivisions['subdivisions'].replace({np.nan: None})
 
-    # Update holidays_subdivisions table
-    truncate_query = "TRUNCATE TABLE holidays_subdivisions;"
-    db_conn.execute_query(truncate_query)
-    db_conn.insert_dataframe(holidays_subdivisions, 'holidays_subdivisions')
+        # Update holidays_subdivisions table
+        truncate_query = "TRUNCATE TABLE holidays_subdivisions;"
+        db_conn.execute_query(truncate_query)
+        db_conn.insert_dataframe(holidays_subdivisions, 'holidays_subdivisions')
+    except Exception as error:
+        raise Exception('Internal Server Error')
 
     return 'holidays and holidays_subdivisions table updated successfully'
 

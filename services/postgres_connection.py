@@ -24,10 +24,10 @@ class PostgresConnection:
                 port=self.port
             )
             self.cursor = self.connection.cursor()
-            print("Connection established successfully.")
         except OperationalError as e:
             print(f"Failed to connect to PostgreSQL database: {e}")
             self.connection = None
+            raise Exception(f"Failed to connect to PostgreSQL database: {e}")
 
     def execute_query(self, query, params=None):
         """Executes a SQL query."""
@@ -38,7 +38,6 @@ class PostgresConnection:
         try:
             self.cursor.execute(query, params)
             self.connection.commit()
-            print("Query executed successfully.")
         except Exception as e:
             print(f"Error executing query: {e}")
             self.connection.rollback()
@@ -76,7 +75,6 @@ class PostgresConnection:
             # Use execute_values for efficient bulk insert
             execute_values(self.cursor, insert_query, data_tuples)
             self.connection.commit()
-            print("Data inserted successfully.")
         except Exception as e:
             print(f"Error inserting data: {e}")
             self.connection.rollback()

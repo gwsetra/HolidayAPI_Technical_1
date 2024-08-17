@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 
 from services.helper import update_holidays_from_api, update_locations_table, format_date
 from services.postgres_connection import PostgresConnection
@@ -21,17 +21,25 @@ def refresh_locations_from_sql():
 
         return jsonify({"message": response})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        if 'Database' in error.args[0]:
+            abort(401, description="Issue connecting with Database")
+        else:
+            abort(500, description=str(error))
 
 @app.route('/refresh_holidays_data', methods=['POST'])
 def refresh_holidays_data():
     """Refresh holiday data by getting data from the API, update holidays and holidays_subdivisions table and return a success message."""
     try:
-        response = update_holidays_from_api(db_conn, holiday_client)
+        response, error_code = update_holidays_from_api(db_conn, holiday_client)
 
         return jsonify({"message": response})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception as error:
+        if 'Invalid API Key' in error.args[0]:
+            abort(401, description="Bad Request: Invalid API Key")
+        if 'Database' in error.args[0]:
+            abort(401, description="Issue connecting with Database")
+        else:
+            abort(500, description=str(error))
 
 @app.route('/find_holidays/<location_id>', methods=['GET'])
 def find_holidays(location_id):
@@ -97,29 +105,34 @@ def internal_error(error):
 def not_found_error(error):
     return jsonify({"error": "Not Found"}), 404
 
-@app.teardown_appcontext
-def teardown(exception):
-    """Close the database connection when the application context is torn down."""
-    if db_conn is not None:
-        db_conn.close()
-
 if __name__ == "__main__":
-    # Load environment variable
-    load_dotenv()
+    with app.app_context():
+        # Load environment variable
+        load_dotenv()
 
-    # Initiate database connection
-    db_conn = PostgresConnection(
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USERNAME"),
-        password=os.getenv("DB_PASSWORD")
-    )
+        # Initiate database connection
+        db_conn = PostgresConnection(
+            dbname=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USERNAME"),
+            password=os.getenv("DB_PASSWORD")
+        )
 
-    # Initiate HolidayAPI client
-    holiday_client = HolidayAPIClient(os.getenv("API_KEY"))
+        # Initiate HolidayAPI client
+        holiday_client = HolidayAPIClient(os.getenv("API_KEY"))
 
-    # Open database connection
-    db_conn.connect()
+        # Open database connection
+        try:
+            db_conn.connect()
+        except Exception as error:
+            error_message = str(error.args[0])
 
-    # Refresh holidays data on first initialisation of service
-    update_holidays_from_api(db_conn, holiday_client)
-    app.run(debug=True)
+            if 'connect' in error_message:
+                abort(401, description="Issue connecting with Database. Please validate credentials or availability of your database")
+            else:
+                abort(500, description="Unknown Internal Server Error" + error_message)
+
+        # Refresh holidays and locations data on first initialisation of service
+        refresh_locations_from_sql()
+        update_holidays_from_api(db_conn, holiday_client)
+
+        app.run(debug=True)
