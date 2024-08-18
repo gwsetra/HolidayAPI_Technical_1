@@ -20,7 +20,7 @@ def refresh_locations_from_sql():
         response = update_locations_table(db_conn)
 
         return jsonify({"message": response})
-    except Exception as e:
+    except Exception as error:
         if 'Database' in error.args[0]:
             abort(401, description="Issue connecting with Database")
         else:
