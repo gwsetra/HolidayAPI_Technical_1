@@ -6,6 +6,14 @@ This project is a Flask-based API that interacts with a PostgreSQL database and 
 
 Daily 00.01 CRON Airflow job will fetch latest holidays data from Holidays API. This service provides capabilities for user to fetch latest holidays data or refresh locations data on demand.
 
+### Conceptual Diagram:
+<p align="center">
+  <img src="Technical_1_diagram.png" alt="conceptual diagram" />
+</p>
+<p align="center">
+  <em>Figure 1: Conceptual diagram</em>
+</p>
+
 ## Prerequisites
 
 Before you start, ensure you have the following installed:
